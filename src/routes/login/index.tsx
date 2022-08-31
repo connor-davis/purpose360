@@ -1,11 +1,11 @@
 import { component$ } from "@builder.io/qwik";
+import { DocumentHead } from "@builder.io/qwik-city";
 
 export default component$(() => {
   return (
     <div class="flex flex-col w-full h-full justify-center items-center">
       <div class="flex flex-col w-96 h-auto p-5 rounded-lg shadow-2xl shadow-black bg-gray-100 text-black space-y-10">
         <div class="flex flex-col w-full justify-center items-center space-y-5">
-          <img src="/logos/PurposeMainLogo.png" width={"256px"} />
           <div class="flex w-full justify-center items-center space-x-1">
             <div class="text-gray-400">Don't have an account?</div>
             <a class="text-lime-400 cursor-pointer" href="/register">Create One</a>
@@ -48,3 +48,7 @@ export default component$(() => {
     </div>
   );
 });
+
+export const head: DocumentHead = {
+  title: 'Login',
+};

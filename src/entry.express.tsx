@@ -1,13 +1,24 @@
-import { qwikCity } from '@builder.io/qwik-city/middleware/express';
-import express from 'express';
-import { fileURLToPath } from 'url';
-import { join } from 'path';
-import render from './entry.ssr';
+"use strict";
+
+import dotenv from "dotenv";
+
+dotenv.config();
+
+import { qwikCity } from "@builder.io/qwik-city/middleware/express";
+import bodyParser from "body-parser";
+import express from "express";
+import session from "express-session";
 import mongoose from "mongoose";
+import passport from "passport";
+import { join } from "path";
+import { fileURLToPath } from "url";
+import render from "./entry.ssr";
+import JwtStrategy from "./strategies/jwt";
+import cors from "cors";
 
 // directories where the static assets are located
-const distDir = join(fileURLToPath(import.meta.url), '..', '..', 'dist');
-const buildDir = join(distDir, 'build');
+const distDir = join(fileURLToPath(import.meta.url), "..", "..", "dist");
+const buildDir = join(distDir, "build");
 
 // create the Qwik City express middleware
 const { router, notFound } = qwikCity(render);
@@ -22,8 +33,32 @@ client.then(() => {
 const app = express();
 
 // static asset handlers
-app.use(`/build`, express.static(buildDir, { immutable: true, maxAge: '1y' }));
+app.use(`/build`, express.static(buildDir, { immutable: true, maxAge: "1y" }));
 app.use(express.static(distDir, { redirect: false }));
+app.use(
+  session({
+    secret: `${process.env.session_secret}`,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(cors());
+
+// Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user: any, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id: string, done) => {
+  return done(null, id);
+});
+
+passport.use("jwt", JwtStrategy);
 
 // use Qwik City's page and endpoint handler
 app.use(router);
